@@ -56,6 +56,9 @@ namespace Ocorrencias.Servicos
 
             ocorrencia.Distancia = conteudo.DistanciaEstimada;
             ocorrencia.TempoEstimaodo = conteudo.DuracaoEstimada;
+            ocorrencia.CorporacaoId = conteudo.CorporacaoMaisProxima.Id;
+            ocorrencia.NomeCorporacao = conteudo.CorporacaoMaisProxima.Nome;
+            ocorrencia.ViaturaId = conteudo.ViaturaId;
 
             _context.Ocorrencias.Add(ocorrencia);
             await _context.SaveChangesAsync();

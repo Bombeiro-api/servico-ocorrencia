@@ -4,6 +4,8 @@ public class RoteamentoResponseDTO
 {
     public CorporacaoBombeiroDTO CorporacaoMaisProxima { get; set; } = new();
 
+    public int ViaturaId { get; set; }
+
     public string DuracaoEstimada { get; set; } = string.Empty;
 
     public string DistanciaEstimada { get; set; } = string.Empty;

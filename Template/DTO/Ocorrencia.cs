@@ -16,6 +16,13 @@
 
         public DateTime DataAbertura { get; set; } = DateTime.Now;
         public string Distancia { get; set; } = "";
-        public string TempoEstimaodo { get; set; } = ""; 
+
+        public string TempoEstimaodo { get; set; } = "";
+
+        public int CorporacaoId { get; set; }
+
+        public string NomeCorporacao { get; set; } = "";
+
+        public int ViaturaId { get; set; }
     }
 }
