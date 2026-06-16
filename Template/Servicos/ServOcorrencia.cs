@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
 using Ocorrencias.DTO;
 
 namespace Ocorrencias.Servicos
@@ -24,6 +25,38 @@ namespace Ocorrencias.Servicos
 
         public async Task<Ocorrencia> Criar(Ocorrencia ocorrencia)
         {
+            using HttpClient client = new();
+
+            var request = new RoteamentoRequestDTO
+            {
+                LocalIncendio = new LocalizacaoDTO
+                {
+                    Latitude = ocorrencia.Latitude,
+                    Longitude = ocorrencia.Longitude
+                }
+            };
+
+            var response = await client.PostAsJsonAsync(
+                "http://localhost:5089/api/Mapa/rota-mais-proxima",
+                request
+            );
+
+            var respostaBruta = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine("RESPOSTA DO MAPA:");
+            Console.WriteLine(respostaBruta);
+
+            var conteudo = await response.Content.ReadFromJsonAsync<RoteamentoResponseDTO>();
+            
+            if (conteudo == null)
+            {
+                Console.WriteLine("Resposta do Mapa é nula.");
+                throw new Exception("Não foi possível obter a rota mais próxima.");
+            }
+
+            ocorrencia.Distancia = conteudo.DistanciaEstimada;
+            ocorrencia.TempoEstimaodo = conteudo.DuracaoEstimada;
+
             _context.Ocorrencias.Add(ocorrencia);
             await _context.SaveChangesAsync();
 

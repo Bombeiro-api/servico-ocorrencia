@@ -15,5 +15,7 @@
         public string Status { get; set; } = "Aberta";
 
         public DateTime DataAbertura { get; set; } = DateTime.Now;
+        public string Distancia { get; set; } = "";
+        public string TempoEstimaodo { get; set; } = ""; 
     }
 }
