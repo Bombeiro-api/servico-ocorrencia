@@ -55,6 +55,17 @@ namespace Ocorrencias.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}/encerrar")]
+        public async Task<IActionResult> Encerrar(int id)
+        {
+            var encerrado = await _servico.Encerrar(id);
+
+            if (!encerrado)
+                return NotFound();
+
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Excluir(int id)
         {

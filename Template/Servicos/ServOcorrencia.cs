@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Ocorrencias.DTO;
 
@@ -7,10 +8,12 @@ namespace Ocorrencias.Servicos
     public class ServOcorrencia
     {
         private readonly DataContext _context;
+        private readonly HttpClient _veiculosClient;
 
-        public ServOcorrencia(DataContext context)
+        public ServOcorrencia(DataContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _veiculosClient = httpClientFactory.CreateClient("veiculos");
         }
 
         public async Task<List<Ocorrencia>> Listar()
@@ -80,6 +83,25 @@ namespace Ocorrencias.Servicos
             existente.Status = ocorrencia.Status;
 
             await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> Encerrar(int id)
+        {
+            var ocorrencia = await _context.Ocorrencias.FindAsync(id);
+
+            if (ocorrencia == null)
+                return false;
+
+            ocorrencia.Status = "Encerrada";
+            await _context.SaveChangesAsync();
+
+            if (ocorrencia.ViaturaId > 0)
+            {
+                var body = new StringContent("0", Encoding.UTF8, "application/json"); // 0 = DisponivelNaBase
+                await _veiculosClient.PatchAsync($"/api/viatura/{ocorrencia.ViaturaId}/status", body);
+            }
 
             return true;
         }

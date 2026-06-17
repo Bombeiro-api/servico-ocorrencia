@@ -12,6 +12,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("veiculos", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServicoVeiculos:BaseUrl"]
+        ?? throw new InvalidOperationException("ServicoVeiculos:BaseUrl não configurada."));
+});
 
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite(
