@@ -4,8 +4,6 @@
 
 O Serviço de Ocorrências é um dos microsserviços do sistema de gerenciamento de ocorrências para o Corpo de Bombeiros. Sua principal responsabilidade é registrar, armazenar e disponibilizar informações sobre ocorrências atendidas pela corporação.
 
-Este serviço foi desenvolvido utilizando arquitetura de microsserviços, permitindo integração com os demais serviços do sistema através de APIs REST.
-
 ## Tecnologias Utilizadas
 
 * .NET 8
@@ -15,36 +13,26 @@ Este serviço foi desenvolvido utilizando arquitetura de microsserviços, permit
 * Scalar
 * REST API
 
-## Funcionalidades
-
-* Cadastro de ocorrências
-* Consulta de ocorrências
-* Atualização de ocorrências
-* Exclusão de ocorrências
-* Armazenamento de coordenadas geográficas (latitude e longitude)
-* Integração com outros microsserviços através de endpoints REST
-
 ## Estrutura da Entidade
 
 ### Ocorrência
 
-| Campo        | Tipo     |
-| ------------ | -------- |
-| Id           | Inteiro  |
-| Tipo         | Texto    |
-| Descricao    | Texto    |
-| Latitude     | Double   |
-| Longitude    | Double   |
-| Status       | Texto    |
-| DataAbertura | DateTime |
+| Campo | Tipo | Descrição |
+|---|---|---|
+| Id | Inteiro | Identificador único |
+| Tipo | Texto | Tipo da ocorrência |
+| Descricao | Texto | Descrição do incidente |
+| Latitude | Double | Coordenada geográfica |
+| Longitude | Double | Coordenada geográfica |
+| Status | Texto | Status atual (padrão: "Aberta") |
+| DataAbertura | DateTime | Data e hora do registro |
+| Distancia | Texto | Distância estimada da corporação até o local |
+| TempoEstimaodo | Texto | Tempo estimado de deslocamento |
+| CorporacaoId | Inteiro | ID da corporação despachada (vem do servico-veiculos) |
+| NomeCorporacao | Texto | Nome da corporação despachada |
+| ViaturaId | Inteiro | ID da viatura despachada (vem do servico-veiculos) |
 
-## Banco de Dados
-
-O microsserviço utiliza SQLite como banco de dados local e Entity Framework Core para mapeamento e persistência dos dados.
-
-Foi utilizada a abordagem Code First, com geração automática da estrutura do banco através de Migrations.
-
-## Endpoints Disponíveis
+## Endpoints
 
 ### Listar ocorrências
 
@@ -64,6 +52,16 @@ GET /api/Ocorrencia/{id}
 POST /api/Ocorrencia
 ```
 
+**Body:**
+```json
+{
+  "tipo": "Incêndio",
+  "descricao": "Incêndio em residência",
+  "latitude": -28.7283,
+  "longitude": -49.3015
+}
+```
+
 ### Atualizar ocorrência
 
 ```http
@@ -78,21 +76,25 @@ DELETE /api/Ocorrencia/{id}
 
 ## Integração com Outros Microsserviços
 
-Este serviço foi projetado para fornecer informações ao microsserviço de Mapas. As coordenadas de latitude e longitude armazenadas em cada ocorrência permitem que o serviço de Mapas realize cálculos de rota e localização para atendimento das ocorrências.
+Ao criar uma ocorrência, este serviço chama o **ServicoMapa** para obter a rota e a corporação mais próxima. O ServicoMapa por sua vez consulta o **servico-veiculos** para encontrar uma viatura disponível e despachá-la.
 
-Exemplo de fluxo:
+### Fluxo completo
 
-1. Uma ocorrência é registrada.
-2. O serviço de Ocorrências armazena as coordenadas geográficas.
-3. O serviço de Mapas consulta a ocorrência.
-4. A rota de atendimento é calculada utilizando os dados recebidos.
+```
+POST /api/Ocorrencia
+  └─► ServicoMapa POST /api/mapa/rota-mais-proxima
+        ├─► servico-veiculos GET /api/corporacao  (busca corporações com viatura disponível)
+        ├─► Google Maps Distance Matrix           (encontra a mais próxima)
+        ├─► servico-veiculos PATCH /api/viatura/{id}/status  (despacha a viatura)
+        └─► retorna corporação, viatura, distância e tempo estimado
+
+A ocorrência é salva com os dados de despacho preenchidos automaticamente.
+```
 
 ## Arquitetura
 
-O projeto está organizado nas seguintes camadas:
-
-* **Controllers:** exposição dos endpoints da API.
-* **Servicos:** regras de negócio e operações da aplicação.
-* **DTO:** entidades e modelos de dados.
-* **DataContext:** comunicação com o banco de dados.
-* **Migrations:** controle de versão da estrutura do banco.
+* **Controllers** — exposição dos endpoints da API
+* **Servicos** — regras de negócio e integração com ServicoMapa
+* **DTO** — modelos de dados e contratos com outros serviços
+* **DataContext** — comunicação com o banco de dados
+* **Migrations** — controle de versão da estrutura do banco
