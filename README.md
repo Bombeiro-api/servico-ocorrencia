@@ -60,6 +60,14 @@ POST /api/Ocorrencia
 }
 ```
 
+### Encerrar ocorrência
+
+```http
+PATCH /api/Ocorrencia/{id}/encerrar
+```
+
+Marca a ocorrência como `Encerrada` e libera automaticamente a viatura de volta ao status `DisponivelNaBase` no servico-veiculos.
+
 ### Atualizar ocorrência
 
 ```http
