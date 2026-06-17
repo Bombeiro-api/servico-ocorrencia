@@ -1,8 +1,6 @@
 # Serviço de Ocorrências
 
-## Sobre o Projeto
-
-O Serviço de Ocorrências é um dos microsserviços do sistema de gerenciamento de ocorrências para o Corpo de Bombeiros. Sua principal responsabilidade é registrar, armazenar e disponibilizar informações sobre ocorrências atendidas pela corporação.
+Microsserviço responsável pelo registro e gestão de ocorrências do corpo de bombeiros. Ao criar uma ocorrência, aciona automaticamente o serviço de mapa para calcular a rota e despachar a viatura mais próxima. Faz parte do [Sistema CAD Bombeiros](https://github.com/Bombeiro-api).
 
 ## Tecnologias Utilizadas
 
@@ -76,25 +74,20 @@ DELETE /api/Ocorrencia/{id}
 
 ## Integração com Outros Microsserviços
 
-Ao criar uma ocorrência, este serviço chama o **ServicoMapa** para obter a rota e a corporação mais próxima. O ServicoMapa por sua vez consulta o **servico-veiculos** para encontrar uma viatura disponível e despachá-la.
-
-### Fluxo completo
+Ao criar uma ocorrência, este serviço chama o **servico-mapa** que por sua vez consulta o **servico-veiculos** e despacha a viatura mais próxima. Os dados de despacho são preenchidos automaticamente na ocorrência.
 
 ```
-POST /api/Ocorrencia
-  └─► ServicoMapa POST /api/mapa/rota-mais-proxima
-        ├─► servico-veiculos GET /api/corporacao  (busca corporações com viatura disponível)
-        ├─► Google Maps Distance Matrix           (encontra a mais próxima)
-        ├─► servico-veiculos PATCH /api/viatura/{id}/status  (despacha a viatura)
+POST /api/ocorrencia
+  └─► servico-mapa POST /api/mapa/rota-mais-proxima
         └─► retorna corporação, viatura, distância e tempo estimado
-
-A ocorrência é salva com os dados de despacho preenchidos automaticamente.
 ```
+
+Para o fluxo completo de despacho, consulte o [README da organização](https://github.com/Bombeiro-api).
 
 ## Arquitetura
 
 * **Controllers** — exposição dos endpoints da API
-* **Servicos** — regras de negócio e integração com ServicoMapa
+* **Servicos** — regras de negócio e integração com servico-mapa
 * **DTO** — modelos de dados e contratos com outros serviços
 * **DataContext** — comunicação com o banco de dados
 * **Migrations** — controle de versão da estrutura do banco
